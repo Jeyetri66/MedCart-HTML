@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MedCart - Online Medicine Store</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Simple internal CSS for basic design -->
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fb;
+      color: #222;
+    }
+
+    header {
+      background-color: #1976d2;
+      color: white;
+      padding: 16px 24px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .panel {
+      flex: 1 1 350px;
+      background-color: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      font-size: 18px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f4ff;
+    }
+
+    button {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .btn-add {
+      background-color: #1976d2;
+      color: white;
+    }
+
+    .btn-remove {
+      background-color: #d32f2f;
+      color: white;
+    }
+
+    .summary {
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    .checkout-box {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #e8f5e9;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .footer-note {
+      font-size: 12px;
+      margin-top: 8px;
+      color: #555;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Page Header -->
+  <header>
+    <h1>MedCart</h1>
+    <p>Simple medicine ordering app for DevOps Project (Frontend Demo)</p>
+  </header>
+
+  <div class="container">
+    <!-- Left side: Medicines list -->
+    <div class="panel">
+      <h2>Available Medicines</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Medicine</th>
+            <th>Use</th>
+            <th>Price (₹)</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="medicine-body">
+          <!-- Filled by JavaScript -->
+        </tbody>
+      </table>
+      <p class="footer-note">
+        Select a medicine and click <b>Add</b> to put it into the cart.
+      </p>
+    </div>
+
+    <!-- Right side: Cart -->
+    <div class="panel">
+      <h2>Cart</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Medicine</th>
+            <th>Qty</th>
+            <th>Price (₹)</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="cart-body">
+          <!-- Cart rows will appear here -->
+        </tbody>
+      </table>
+
+      <div class="summary" id="cart-summary">
+        Total Items: 0 | Total Amount: ₹0
+      </div>
+
+      <div class="checkout-box">
+        <p><b>Checkout Summary</b></p>
+        <p id="checkout-text">
+          Add medicines to the cart to see the final bill.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Simple JavaScript to handle data & cart -->
+  <script>
+    // List of medicines (dummy data for demo)
+    const medicines = [
+      { id: 1, name: "Paracetamol 500mg", use: "Fever & mild pain", price: 25 },
+      { id: 2, name: "Cetirizine 10mg", use: "Allergy & cold", price: 18 },
+      { id: 3, name: "Amoxicillin 500mg", use: "Bacterial infection", price: 80 },
+      { id: 4, name: "Vitamin C 500mg", use: "Immunity booster", price: 40 },
+      { id: 5, name: "Pantoprazole 40mg", use: "Acidity & ulcer", price: 55 }
+    ];
+
+    // Cart array -> { id, name, price, qty }
+    let cart = [];
+
+    // Load medicines into table
+    function loadMedicines() {
+      const tbody = document.getElementById("medicine-body");
+      tbody.innerHTML = "";
+
+      medicines.forEach((med) => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${med.name}</td>
+          <td>${med.use}</td>
+          <td>${med.price}</td>
+          <td><button class="btn-add" onclick="addToCart(${med.id})">Add</button></td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Add medicine to cart
+    function addToCart(medId) {
+      const selectedMed = medicines.find(m => m.id === medId);
+      if (!selectedMed) return;
+
+      const existingItem = cart.find(item => item.id === medId);
+
+      if (existingItem) {
+        existingItem.qty += 1;
+      } else {
+        cart.push({
+          id: selectedMed.id,
+          name: selectedMed.name,
+          price: selectedMed.price,
+          qty: 1
+        });
+      }
+
+      renderCart();
+    }
+
+    // Remove one quantity from cart
+    function removeFromCart(medId) {
+      const itemIndex = cart.findIndex(item => item.id === medId);
+      if (itemIndex === -1) return;
+
+      if (cart[itemIndex].qty > 1) {
+        cart[itemIndex].qty -= 1;
+      } else {
+        cart.splice(itemIndex, 1);
+      }
+
+      renderCart();
+    }
+
+    // Show cart data in table
+    function renderCart() {
+      const tbody = document.getElementById("cart-body");
+      const summary = document.getElementById("cart-summary");
+      const checkoutText = document.getElementById("checkout-text");
+
+      tbody.innerHTML = "";
+
+      let totalItems = 0;
+      let totalAmount = 0;
+
+      cart.forEach(item => {
+        const lineTotal = item.qty * item.price;
+        totalItems += item.qty;
+        totalAmount += lineTotal;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${item.name}</td>
+          <td>${item.qty}</td>
+          <td>${lineTotal}</td>
+          <td><button class="btn-remove" onclick="removeFromCart(${item.id})">Remove</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      summary.textContent = `Total Items: ${totalItems} | Total Amount: ₹${totalAmount}`;
+
+      if (totalItems === 0) {
+        checkoutText.textContent = "Cart is empty. Please add some medicines.";
+      } else {
+        checkoutText.textContent =
+          `You have ${totalItems} item(s) in the cart. Please proceed to payment (dummy step for this project).`;
+      }
+    }
+
+    // When page loads, show medicines
+    window.onload = function() {
+      loadMedicines();
+      renderCart();
+    };
+  </script>
+</body>
+</html>
